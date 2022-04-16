@@ -1,0 +1,48 @@
+FROM python:3.9-bullseye as base
+
+WORKDIR /code
+
+COPY ./pyproject.toml ./poetry.lock* main.py /code/
+COPY ./app /code/app
+
+RUN pip install --no-cache-dir poetry \
+    && poetry export --output requirements.txt --without-hashes \
+    && pip install --no-cache-dir --upgrade -r /code/requirements.txt
+
+FROM base as compressor
+
+RUN apt-get update -y \
+    && apt-get install --no-install-recommends -y \
+        build-essential \
+        ccache \
+        clang \
+        libfuse-dev \
+        patchelf \
+        upx \
+    && pip install --no-cache-dir nuitka
+
+RUN python3 -m nuitka \
+        --standalone \
+        --nofollow-import-to=pytest \
+        --python-flag=nosite,-O \
+        --plugin-enable=pylint-warnings \
+        --clang \
+        --warn-implicit-exceptions \
+        --warn-unusual-code \
+        --prefer-source-code \
+        --include-module=app \
+        main.py
+
+RUN cd main.dist/ \
+    && upx -9 main -o main.upx
+
+# FROM debian:bullseye-slim
+FROM gcr.io/distroless/base-debian11
+
+COPY --from=compressor /code/main.dist/main.upx /app/main
+COPY --from=compressor /code/main.dist/*.so* /app/
+
+WORKDIR /app
+
+ENTRYPOINT ["/app/main"]
+CMD ["--host", "0.0.0.0", "--port", "80"]

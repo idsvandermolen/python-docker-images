@@ -1,9 +1,8 @@
 .PHONY: help clean image shell serve image-slim shell-slim serve-slim nuitka-image \
 	nuitka-shell nuitka-serve freeze-image freeze-shell freeze-serve \
 	pyinstaller-image pyinstaller-shell pyinstaller-serve
+
 IMAGE := rest-app
-export MANIFESTS = $(CURDIR)/manifests
-CONFIGS = $(CURDIR)/config/*.yaml
 
 help:  ## Show help messages for make targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \

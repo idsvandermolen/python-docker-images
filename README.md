@@ -10,8 +10,8 @@ libraries
 * UPX creates a static executable, but after decompression it becomes a dynamic
 executable
 * cx_Freeze struggles with some `uvicorn` modules and doesn't copy all (system)
-libs like `libreadline.so.1`, `libexpat.so.1` and `libz.so.1`. This is why we
-use a regular Debian as the base image instead of Google distroless.
+libs like `libreadline.so.1`, `libexpat.so.1` and `libz.so.1`. So we need to add
+a routine to copy the libraries and set `LD_LIBRARY_PATH`
 * PyInstaller seems to be able to copy all dependant shared libraries etc. Also
 can use UPX when available. You might need to set `LD_LIBRARY_PATH`.
 
@@ -19,11 +19,11 @@ can use UPX when available. You might need to set `LD_LIBRARY_PATH`.
 This is the output of `docker images` sorted by size:
 ```
 REPOSITORY                        TAG             IMAGE ID       CREATED          SIZE
-rest-app                          pyinstaller     2df87860d887   54 seconds ago   41.4MB
-rest-app                          nuitka          81e534483a9a   23 hours ago     65.8MB
-rest-app                          freeze          e2ef880418e0   23 hours ago     100MB
-rest-app                          slim            cb9750b00759   23 hours ago     179MB
-rest-app                          latest          db20cf008e29   23 hours ago     968MB
+rest-app                          pyinstaller     2df87860d887   About an hour ago   41.4MB
+rest-app                          freeze          d473482901c2   58 seconds ago      43.1MB
+rest-app                          nuitka          08f487d9ba59   12 minutes ago      65.8MB
+rest-app                          slim            cb9750b00759   24 hours ago        179MB
+rest-app                          latest          db20cf008e29   24 hours ago        968MB
 ```
 Note the difference between python-slim (`:slim`) images and regular python
 images (`:latest`).

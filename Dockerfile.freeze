@@ -13,27 +13,24 @@ FROM base as compressor
 
 RUN pip install --no-cache-dir cx_Freeze
 
-RUN cxfreeze --compress main.py --target-dir dist --packages uvicorn
+# run cxfreeze and remove some libs that are already in our final image in
+# /usr/lib/x86_64-linux-gnu and strip symbols and debug info from shared libraries:
+RUN cxfreeze --compress main.py --target-dir dist --packages uvicorn \
+    && cd dist/lib \
+    && find . -type f -name "*.so" | \
+    xargs ldd | fgrep '=>' | \
+    awk '{print $3,$1}' | sort -u | xargs -n 2 cp -v --no-clobber \
+    && rm -f libcrypto.so.1.1 \
+    && rm -f libssl.so.1.1 \
+    && rm -f libc.so.6 libdl.so.2 libm.so.6 libpthread.so.0 librt.so.1\
+    && find . -name '*.so' | xargs strip
 
-# strip symbols and debug info from shared libraries:
-RUN find dist -name '*.so' | xargs strip
-
-# cx_Freeze doesn't copy libz.so.1, libreadline.so and libexpat.so, so we need to
-# base on normal Debian instead of distroless Debian.
-FROM debian:bullseye-slim
-# FROM gcr.io/distroless/base-debian11
+# FROM debian:bullseye-slim
+FROM gcr.io/distroless/base-debian11
 
 COPY --from=compressor /code/dist/ /app/
 
-ENV LD_LIBRARY_PATH=/app
-
-# Check if we have all shared libraries:
-# libreadline.so and libexpat.so will be missing, but that's not a big issue.
-RUN cd /app/lib \
-    && find . -type f -name "*.so" | \
-    xargs ldd | fgrep '=>' | \
-    awk '{print $3,$1}' | sort -u | fgrep -v -e libreadline.so -e libexpat.so | \
-    fgrep 'not found'; if [ "$?" = 0 ];then echo "some shared libraries are missing";exit 1;fi
+ENV LD_LIBRARY_PATH=/app/lib
 
 WORKDIR /app
 

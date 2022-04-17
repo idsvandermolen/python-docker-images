@@ -16,7 +16,11 @@ RUN apt-get update -y \
     upx \
     && pip install --no-cache-dir pyinstaller
 
-RUN pyinstaller --strip main.py
+# run PyInstaller and remove some libs that are already in our final image in
+# /usr/lib/x86_64-linux-gnu
+RUN pyinstaller --strip main.py \
+    && rm -f dist/main/libcrypto.so.1.1 \
+    && rm -f dist/main/libssl.so.1.1
 
 # FROM debian:bullseye-slim
 FROM gcr.io/distroless/base-debian11

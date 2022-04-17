@@ -19,11 +19,11 @@ can use UPX when available. You might need to set `LD_LIBRARY_PATH`.
 This is the output of `docker images` sorted by size:
 ```
 REPOSITORY                        TAG             IMAGE ID       CREATED          SIZE
-rest-app                          pyinstaller     3ef0872a6705   3 minutes ago    45.1MB
-rest-app                          nuitka          81e534483a9a   3 minutes ago    65.8MB
-rest-app                          freeze          e2ef880418e0   3 minutes ago    100MB
-rest-app                          slim            cb9750b00759   7 seconds ago    179MB
-rest-app                          latest          db20cf008e29   17 minutes ago   968MB
+rest-app                          pyinstaller     2df87860d887   54 seconds ago   41.4MB
+rest-app                          nuitka          81e534483a9a   23 hours ago     65.8MB
+rest-app                          freeze          e2ef880418e0   23 hours ago     100MB
+rest-app                          slim            cb9750b00759   23 hours ago     179MB
+rest-app                          latest          db20cf008e29   23 hours ago     968MB
 ```
 Note the difference between python-slim (`:slim`) images and regular python
 images (`:latest`).

@@ -30,11 +30,15 @@ RUN python3 -m nuitka \
         --warn-implicit-exceptions \
         --warn-unusual-code \
         --prefer-source-code \
-        --include-module=app \
         main.py
 
+# run Nuitka and remove some libs that are already in our final image in
+# /usr/lib/x86_64-linux-gnu and strip shared libs
 RUN cd main.dist/ \
-    && upx -9 main -o main.upx
+    && upx -9 main -o main.upx \
+    && rm -f dist/main/libcrypto.so.1.1 \
+    && rm -f dist/main/libssl.so.1.1 \
+    && find . -name '*.so*' | xargs
 
 # FROM debian:bullseye-slim
 FROM gcr.io/distroless/base-debian11

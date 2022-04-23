@@ -14,20 +14,19 @@ FROM base as compressor
 RUN apt-get update -y \
     && apt-get install --no-install-recommends -y \
     upx \
-    && pip install --no-cache-dir pyinstaller
+    && pip install --no-cache-dir pyinstaller patchelf
 
 # run PyInstaller and remove some libs that are already in our final image in
 # /usr/lib/x86_64-linux-gnu
 RUN pyinstaller --strip main.py \
     && rm -f dist/main/libcrypto.so.1.1 \
-    && rm -f dist/main/libssl.so.1.1
+    && rm -f dist/main/libssl.so.1.1 \
+    && patchelf --add-rpath '$ORIGIN' /code/dist/main/main
 
 # FROM debian:bullseye-slim
 FROM gcr.io/distroless/base-debian11
 
 COPY --from=compressor /code/dist/main/ /app/
-
-ENV LD_LIBRARY_PATH=/app
 
 WORKDIR /app
 

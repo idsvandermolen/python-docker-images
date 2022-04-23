@@ -47,7 +47,7 @@ This is the output of `docker images` sorted by size:
 REPOSITORY                        TAG             IMAGE ID       CREATED          SIZE
 rest-app                          pyinstaller     2df87860d887   About an hour ago   41.4MB
 rest-app                          freeze          d473482901c2   58 seconds ago      43.1MB
-rest-app                          nuitka          08f487d9ba59   12 minutes ago      65.8MB
+rest-app                          nuitka          29702638154e   54 seconds ago      62MB
 rest-app                          slim            cb9750b00759   24 hours ago        179MB
 rest-app                          latest          db20cf008e29   24 hours ago        968MB
 ```

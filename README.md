@@ -31,6 +31,7 @@ libraries. This is really an alternative python interpreter/compiler
 * `PyInstaller` compiles Python code into Python bytecode and collects dependencies and libraries
 * `Regular` compiles Python code into Python bytecode and uses the base Python image
 * `Slim` compiles Python code into Python bytecode and uses the `slimmed` Python image
+* `BuildPacks` compiles using `pack`, does not require a `Dockerfile`
 
 ## Notes
 * `UPX` creates a static executable, but after decompression it becomes a dynamic
@@ -50,6 +51,7 @@ rest-app                          freeze          d473482901c2   58 seconds ago 
 rest-app                          nuitka          29702638154e   54 seconds ago      62MB
 rest-app                          slim            cb9750b00759   24 hours ago        179MB
 rest-app                          latest          db20cf008e29   24 hours ago        968MB
+rest-app                          buildpack       dd199e7c23e9   42 years ago        382MB
 ```
 Note the difference between python-slim (`:slim`) images and regular python
 images (`:latest`).
@@ -58,7 +60,6 @@ Google distroless base Debian image. The base / regular Python image is 20 times
 the distroless image!
 
 ## TODO
-* use `patchelf` Python / Linux tool to correct RPATH (removes the need for setting `LD_LIBRARY_PATH`)
 * compile Python code to bytecode and remove the regular Python code
 * use `python3 -mcompileall -b` for legacy `.pyc` bytecode file locations
 * test `Cython`

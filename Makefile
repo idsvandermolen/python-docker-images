@@ -1,6 +1,7 @@
 .PHONY: help clean image shell serve image-slim shell-slim serve-slim nuitka-image \
 	nuitka-shell nuitka-serve freeze-image freeze-shell freeze-serve \
-	pyinstaller-image pyinstaller-shell pyinstaller-serve
+	pyinstaller-image pyinstaller-shell pyinstaller-serve buildpacks-image \
+	buildpacks-dev
 
 IMAGE := rest-app
 
@@ -57,3 +58,15 @@ pyinstaller-shell: pyinstaller-image ## Start PyInstaller docker container shell
 
 pyinstaller-dev: pyinstaller-image ## Start PyInstaller server
 	@docker run -it --rm -p 80:80 $(IMAGE):pyinstaller
+
+./pack:
+	@curl -sL -o - https://github.com/buildpacks/pack/releases/download/v0.26.0/pack-v0.26.0-macos.tgz | tar xzvf -
+
+buildpack-image: clean ## Build BuildPacks docker image
+	@mkdir buildpack.build
+	@ cp -r Procfile pyproject.toml poetry.lock main.py app buildpack.build
+	@./pack build $(IMAGE):buildpack --path buildpack.build --builder paketobuildpacks/builder:base --buildpack paketo-buildpacks/python
+	@rm -rf buildpack.build
+
+buildpack-dev: buildpack-image ## Start BuildPacks server
+	@docker run -it --rm -p 80:80 $(IMAGE):buildpack

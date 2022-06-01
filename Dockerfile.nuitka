@@ -36,7 +36,7 @@ RUN python3 -m nuitka \
 RUN cd main.dist/ \
     && rm -f libcrypto.so.1.1 \
     && rm -f libssl.so.1.1 \
-    && find . -name '*.so*' | xargs
+    && find . -name '*.so*' | xargs strip
 
 # FROM debian:bullseye-slim
 FROM gcr.io/distroless/base-debian11

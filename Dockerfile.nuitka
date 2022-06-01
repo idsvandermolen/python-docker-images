@@ -18,7 +18,6 @@ RUN apt-get update -y \
         clang \
         libfuse-dev \
         patchelf \
-        upx \
     && pip install --no-cache-dir nuitka
 
 RUN python3 -m nuitka \
@@ -35,7 +34,6 @@ RUN python3 -m nuitka \
 # run Nuitka and remove some libs that are already in our final image in
 # /usr/lib/x86_64-linux-gnu and strip shared libs
 RUN cd main.dist/ \
-    && upx -9 main -o main.upx \
     && rm -f libcrypto.so.1.1 \
     && rm -f libssl.so.1.1 \
     && find . -name '*.so*' | xargs
@@ -43,7 +41,7 @@ RUN cd main.dist/ \
 # FROM debian:bullseye-slim
 FROM gcr.io/distroless/base-debian11
 
-COPY --from=compressor /code/main.dist/main.upx /app/main
+COPY --from=compressor /code/main.dist/main /app/main
 COPY --from=compressor /code/main.dist/*.so* /app/
 
 WORKDIR /app

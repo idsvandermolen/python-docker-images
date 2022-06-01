@@ -13,7 +13,6 @@ FROM base as compressor
 
 RUN apt-get update -y \
     && apt-get install --no-install-recommends -y \
-    upx \
     && pip install --no-cache-dir pyinstaller patchelf
 
 # run PyInstaller and remove some libs that are already in our final image in

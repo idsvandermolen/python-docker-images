@@ -1,23 +1,23 @@
-FROM python:3.9-bullseye as base
+FROM python:3.12-bullseye as base
 
 WORKDIR /code
 
-COPY ./pyproject.toml ./poetry.lock* main.py /code/
+# project metadata and dependencies
+COPY ./pyproject.toml ./uv.lock* main.py /code/
 COPY ./app /code/app
 
-RUN pip install --no-cache-dir poetry \
-    && poetry export --output requirements.txt --without-hashes \
-    && pip install --no-cache-dir --upgrade -r /code/requirements.txt
+RUN pip install --no-cache-dir uv \
+    # uvx comes bundled with uv, no separate package needed
+    && uv sync --locked --no-install-project --no-dev
 
 FROM base as compressor
 
 RUN apt-get update -y \
-    && apt-get install --no-install-recommends -y \
-    && pip install --no-cache-dir pyinstaller patchelf
+    && pip install --no-cache-dir patchelf
 
-# run PyInstaller and remove some libs that are already in our final image in
-# /usr/lib/x86_64-linux-gnu
-RUN pyinstaller --strip main.py \
+# run PyInstaller through uvx and strip unnecessary libs that are already in
+# our final image in /usr/lib/x86_64-linux-gnu
+RUN uvx pyinstaller --strip main.py \
     && rm -f dist/main/libcrypto.so.1.1 \
     && rm -f dist/main/libssl.so.1.1 \
     && patchelf --add-rpath '$ORIGIN' /code/dist/main/main

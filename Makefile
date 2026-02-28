@@ -60,7 +60,7 @@ pyinstaller-dev: pyinstaller-image ## Start PyInstaller server
 	@docker run -it --rm -p 80:80 $(IMAGE):pyinstaller
 
 ./pack:
-	@curl -sL -o - https://github.com/buildpacks/pack/releases/download/v0.26.0/pack-v0.26.0-macos.tgz | tar xzvf -
+	@curl -sL -o - https://github.com/buildpacks/pack/releases/download/v0.29.0/pack-v0.29.0-macos-arm64.tgz | tar xzvf -
 
 buildpack-image: clean ## Build BuildPacks docker image
 	@mkdir buildpack.build
@@ -70,3 +70,12 @@ buildpack-image: clean ## Build BuildPacks docker image
 
 buildpack-dev: buildpack-image ## Start BuildPacks server
 	@docker run -it --rm -p 80:80 $(IMAGE):buildpack
+
+buildpack-google-image: clean ## Build BuildPacks Google docker image
+	@mkdir buildpack.build
+	@ cp -r Procfile pyproject.toml poetry.lock main.py app buildpack.build
+	@./pack build $(IMAGE):buildpack-google --path buildpack.build --builder gcr.io/buildpacks/builder
+	@rm -rf buildpack.build
+
+buildpack-google-dev: buildpack-image ## Start BuildPacks Google server
+	@docker run -it --rm -p 80:80 $(IMAGE):buildpack-google

@@ -1,19 +1,25 @@
-[tool.poetry]
+[project]
 name = "rest-app"
 version = "0.1.0"
 description = "Test REST app"
-authors = ["Ids van der Molen <2285220+idsvandermolen@users.noreply.github.com>"]
+authors = [{ name = "Ids van der Molen", email = "2285220+idsvandermolen@users.noreply.github.com" }]
+# requires-python = ">=3.9,<3.10"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "click"
+]
+# dependencies = [
+#     "fastapi>=0.75.1,<0.76",
+#     "uvicorn>=0.17.6,<0.18",
+#     "ujson>=5.1.0,<6",
+#     "click>=8.1.2,<9",
+# ]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-fastapi = "^0.75.1"
-uvicorn = "^0.17.6"
-ujson = "^5.1.0"
-click = "^8.1.2"
+[dependency-groups]
+dev = []
 
-[tool.poetry.dev-dependencies]
-pylint = "^2.13.4"
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+# [build-system]
+# requires = ["hatchling"]
+# build-backend = "hatchling.build"

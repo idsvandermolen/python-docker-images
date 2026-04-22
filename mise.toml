@@ -1,0 +1,150 @@
+[env]
+IMAGE = "rest-app"
+
+[tasks.help]
+description = "Show help messages"
+run = "mise tasks"
+
+[tasks.all]
+description = "Build all images"
+depends = [
+    "image",
+    "image-slim",
+    "nuitka-image",
+    "freeze-image",
+    "pyinstaller-image",
+]
+
+[tasks.clean]
+description = "Remove __pycache__ directories"
+run = "find app -name __pycache__ -type d -depth -exec rm -rf {} ';'"
+
+[tasks.image]
+description = "Build regular docker image"
+depends = ["clean"]
+run = "podman build -f Dockerfile -t $IMAGE ."
+
+[tasks.shell]
+description = "Start regular docker container shell"
+depends = ["image"]
+run = "podman run -it --rm --entrypoint /bin/bash $IMAGE"
+
+[tasks.serve]
+description = "Start regular server"
+depends = ["image"]
+run = "podman run -it --rm -p 80:80 $IMAGE"
+
+[tasks.oxy-image]
+description = "Build docker image"
+depends = ["clean"]
+run = "podman build -f Dockerfile.oxy -t $IMAGE:oxy ."
+
+[tasks.oxy-shell]
+description = "Start regular docker container shell"
+depends = ["oxy-image"]
+run = "podman run -it --rm --entrypoint /bin/bash $IMAGE"
+
+[tasks.oxy-serve]
+description = "Start regular server"
+depends = ["oxy-image"]
+run = "podman run -it --rm -p 80:80 $IMAGE"
+
+[tasks.slim-image]
+description = "Build slim docker image"
+depends = ["clean"]
+run = "podman build -f Dockerfile.slim -t $IMAGE:slim ."
+
+[tasks.slim-shell]
+description = "Start slim docker container shell"
+depends = ["slim-image"]
+run = "podman run -it --rm --entrypoint /bin/bash $IMAGE:slim"
+
+[tasks.slim-serve]
+description = "Start slim server"
+depends = ["slim-image"]
+run = "podman run -it --rm -p 80:80 $IMAGE:slim"
+
+[tasks.nuitka-image]
+description = "Build Nuitka docker image"
+depends = ["clean"]
+run = "podman build -f Dockerfile.nuitka -t $IMAGE:nuitka ."
+
+[tasks.nuitka-shell]
+description = "Start Nuitka docker container shell"
+depends = ["nuitka-image"]
+run = "podman run -it --rm --entrypoint /bin/bash $IMAGE:nuitka"
+
+[tasks.nuitka-dev]
+description = "Start Nuitka server"
+depends = ["nuitka-image"]
+run = "podman run -it --rm -p 80:80 $IMAGE:nuitka"
+
+[tasks.freeze-image]
+description = "Build cx_Freeze docker image"
+depends = ["clean"]
+run = "podman build -f Dockerfile.freeze -t $IMAGE:freeze ."
+
+[tasks.freeze-shell]
+description = "Start cx_Freeze docker container shell"
+depends = ["freeze-image"]
+run = "podman run -it --rm --entrypoint /bin/bash $IMAGE:freeze"
+
+[tasks.freeze-dev]
+description = "Start cx_Freeze server"
+depends = ["freeze-image"]
+run = "podman run -it --rm -p 80:80 $IMAGE:freeze"
+
+[tasks.pyinstaller-image]
+description = "Build PyInstaller docker image"
+depends = ["clean"]
+run = "podman build -f Dockerfile.pyinstaller -t $IMAGE:pyinstaller ."
+
+[tasks.pyinstaller-shell]
+description = "Start PyInstaller docker container shell"
+depends = ["pyinstaller-image"]
+run = "podman run -it --rm --entrypoint /bin/bash $IMAGE:pyinstaller"
+
+[tasks.pyinstaller-dev]
+description = "Start PyInstaller server"
+depends = ["pyinstaller-image"]
+run = "podman run -it --rm -p 80:80 $IMAGE:pyinstaller"
+
+[tasks.install-pack]
+description = "Download pack CLI"
+run = """
+if [ ! -f ./pack ]; then
+    curl -sL -o - https://github.com/buildpacks/pack/releases/download/v0.29.0/pack-v0.29.0-macos-arm64.tgz | tar xzvf -
+fi
+"""
+
+[tasks.buildpack-image]
+description = "Build BuildPacks docker image"
+depends = ["clean", "install-pack"]
+run = """
+rm -rf buildpack.build
+mkdir buildpack.build
+cp -r Procfile pyproject.toml uv.lock main.py app buildpack.build
+./pack build $IMAGE:buildpack --path buildpack.build --builder paketobuildpacks/builder:base --buildpack paketo-buildpacks/python
+rm -rf buildpack.build
+"""
+
+[tasks.buildpack-dev]
+description = "Start BuildPacks server"
+depends = ["buildpack-image"]
+run = "podman run -it --rm -p 80:80 $IMAGE:buildpack"
+
+[tasks.buildpack-google-image]
+description = "Build BuildPacks Google docker image"
+depends = ["clean", "install-pack"]
+run = """
+rm -rf buildpack.build
+mkdir buildpack.build
+cp -r Procfile pyproject.toml uv.lock main.py app buildpack.build
+./pack build $IMAGE:buildpack-google --path buildpack.build --builder gcr.io/buildpacks/builder
+rm -rf buildpack.build
+"""
+
+[tasks.buildpack-google-dev]
+description = "Start BuildPacks Google server"
+depends = ["buildpack-google-image"]
+run = "podman run -it --rm -p 80:80 $IMAGE:buildpack-google"

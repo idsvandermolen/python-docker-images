@@ -1,21 +1,25 @@
-FROM python:3.9-bullseye as base
+FROM python:3.12-bullseye as base
 
-WORKDIR /code
+# use uv to manage dependencies rather than poetry
+WORKDIR /app
 
-COPY ./pyproject.toml ./poetry.lock* /code/
+# copy project metadata and lockfile
+COPY ./pyproject.toml ./uv.lock* ./
 
-RUN pip install --no-cache-dir poetry \
-    && poetry export --output requirements.txt --without-hashes
+RUN pip install --no-cache-dir uv \
+    && uv sync --locked --no-install-project --no-dev
 
-FROM python:3.9-bullseye
+# application sources
+COPY main.py ./
+COPY ./app ./app
 
-COPY --from=base /code/requirements.txt /app/requirements.txt
+# compile bytecode inside uv environment
+RUN uv run python3 -m compileall /app
 
-COPY main.py /app/
-COPY ./app /app/app
+FROM python:3.12-bullseye
 
-RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt \
-    && python3 -m compileall /app
+# bring over the prepared app tree (including .venv)
+COPY --from=base /app /app
 
 WORKDIR /app
 

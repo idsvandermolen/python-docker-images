@@ -32,6 +32,10 @@ libraries. This is really an alternative python interpreter/compiler
 * `Regular` compiles Python code into Python bytecode and uses the base Python image
 * `Slim` compiles Python code into Python bytecode and uses the `slimmed` Python image
 * `BuildPacks` compiles using `pack`, does not require a `Dockerfile`
+* `PyOxidizer` (also referred to as "oxy") attempts to create a standalone
+  binary; the Dockerfile includes a fallback stub when packaging fails.
+
+Dependency management in all Dockerfiles now uses **uv** and the accompanying `uv.lock` file rather than Poetry.
 
 ## Notes
 * `UPX` creates a static executable, but after decompression it becomes a dynamic

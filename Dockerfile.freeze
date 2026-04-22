@@ -1,21 +1,18 @@
-FROM python:3.9-bullseye as base
+FROM python:3.12-bullseye as base
 
 WORKDIR /code
 
-COPY ./pyproject.toml ./poetry.lock* main.py /code/
+# set up project and dependencies with uv
+COPY ./pyproject.toml ./uv.lock* main.py /code/
 COPY ./app /code/app
 
-RUN pip install --no-cache-dir poetry \
-    && poetry export --output requirements.txt --without-hashes \
-    && pip install --no-cache-dir --upgrade -r /code/requirements.txt
+RUN pip install --no-cache-dir uv \
+    && uv sync --locked --no-install-project --no-dev
 
 FROM base as compressor
 
-RUN pip install --no-cache-dir cx_Freeze
 
-# run cxfreeze and remove some libs that are already in our final image in
-# /usr/lib/x86_64-linux-gnu and strip symbols and debug info from shared libraries:
-RUN cxfreeze --compress main.py --target-dir dist --packages uvicorn \
+RUN uv run --with cx-freeze cxfreeze --compress main.py --target-dir dist --packages uvicorn \
     && cd dist/lib \
     && find . -type f -name "*.so" | \
     xargs ldd | fgrep '=>' | \
